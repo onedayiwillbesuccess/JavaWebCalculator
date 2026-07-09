@@ -10,6 +10,7 @@ mv -- it is used to move file and dir using this we can change the name of files
 we have 2 users
 default -- ec2-user
 hi
+hello
 admin privilages user -- root --sudo -i  or  sudo su -
 
 
