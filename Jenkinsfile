@@ -9,7 +9,7 @@ pipeline {
     environment {
         IMAGE_NAME = "javawebcalculator"
         CONTAINER_NAME = "javawebcalculator"
-        HOST_PORT = "8081"
+        HOST_PORT = "8082"
     }
 
     stages {
