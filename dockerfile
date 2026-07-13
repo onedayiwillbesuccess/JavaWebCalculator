@@ -1,11 +1,9 @@
-# Use the official Tomcat image
-FROM tomcat:9.0
+FROM tomcat:10-jdk17
 
-# Copy your WAR file into the webapps directory
-COPY */webapp-0.1.war /usr/local/tomcat/webapps/
+RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Expose the default Tomcat port
-EXPOSE 8085
+COPY target/*.war /usr/local/tomcat/webapps/ROOT.war
 
-# Start Tomcat
+EXPOSE 8080
+
 CMD ["catalina.sh", "run"]
