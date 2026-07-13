@@ -2,6 +2,10 @@ pipeline {
 
     agent any
 
+    tools {
+        maven 'Maven3'
+    }
+
     environment {
         IMAGE_NAME = "javawebcalculator"
         CONTAINER_NAME = "javawebcalculator"
@@ -17,9 +21,27 @@ pipeline {
             }
         }
 
+        stage('Verify Tools') {
+            steps {
+                sh '''
+                    echo "Java Version"
+                    java -version
+
+                    echo "Maven Version"
+                    mvn -version
+
+                    echo "Docker Version"
+                    docker --version
+                '''
+            }
+        }
+
         stage('Build WAR') {
             steps {
-                sh 'mvn clean package'
+                sh '''
+                    mvn clean package
+                    ls -lh target/
+                '''
             }
         }
 
@@ -27,12 +49,14 @@ pipeline {
             steps {
                 sh '''
                     docker build \
-                    -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                    -t ${IMAGE_NAME}:${BUILD_NUMBER} \
+                    -t ${IMAGE_NAME}:latest \
+                    .
                 '''
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Stop Existing Container') {
             steps {
                 sh '''
                     docker stop ${CONTAINER_NAME} || true
@@ -52,19 +76,39 @@ pipeline {
             }
         }
 
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    sleep 10
+                    docker ps
+                    docker logs ${CONTAINER_NAME} | tail -20
+                '''
+            }
+        }
     }
 
     post {
 
         success {
-            echo "Deployment Successful"
+            echo '====================================='
+            echo 'Deployment Successful'
             echo "Application URL:"
-            echo "http://YOUR_SERVER_IP:${HOST_PORT}"
+            echo "http://YOUR_PUBLIC_IP:${HOST_PORT}"
+            echo '====================================='
         }
 
         failure {
-            echo "Deployment Failed"
+            echo '====================================='
+            echo 'Deployment Failed'
+            echo 'Check Console Output'
+            echo '====================================='
         }
 
+        always {
+            sh '''
+                echo "Current Running Containers:"
+                docker ps || true
+            '''
+        }
     }
 }
